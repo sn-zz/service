@@ -61,7 +61,6 @@ func FindUserByUsername(username string) User {
     return User{}
 }
 
-//this is bad, I don't think it passes race conditions
 func CreateUser(u User) (User, error) {
     if u.Id = GenerateUuid(); u.Id != "" {
         u.Password = GenerateHash(u.Password)

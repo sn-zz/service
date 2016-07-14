@@ -11,10 +11,12 @@ import (
     "github.com/gorilla/mux"
 )
 
+// GET /index
 var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Welcome!\n")
 })
 
+// POST /auth
 var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var user User
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
@@ -47,6 +49,7 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
 })
 
+// GET /users
 var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json; charset=UTF-8")
     w.WriteHeader(http.StatusOK)
@@ -55,6 +58,7 @@ var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
+// GET /users/:userId
 var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := vars["userId"]
@@ -76,6 +80,7 @@ var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
+// POST /users/:userId
 var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var user User
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
@@ -116,6 +121,7 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
+// PUT /users/:userId
 var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := vars["userId"]
@@ -165,6 +171,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
+// PATCH /users/:userId
 var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := vars["userId"]
@@ -211,6 +218,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Not found")
 })
 
+// DELETE /users/:userId
 var UserDelete = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := vars["userId"]
