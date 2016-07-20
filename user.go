@@ -1,13 +1,19 @@
 // sn - https://github.com/sn
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "net/mail"
+    "time"
+)
 
 type User struct {
-    Id        string    `json:"userId"`
-    Username  string    `json:"username"`
-    Password  string    `json:"password"`
-    Email     string    `json:"email"`
+    Id       uuid          `json:"userId"`
+    Username string        `json:"username"`
+    Password string        `json:"password"`
+    Address  *mail.Address `json:"email"`
+    Created  time.Time     `json:"created"`
+    Updated  time.Time     `json:"updated"`
 }
 
 type Users []User
@@ -16,12 +22,15 @@ var users Users
 
 // Give us some seed data
 func init() {
-    CreateUser(User{Username:"zg",Password:"s3cr3t",Email:"zg@zk.gd"})
-    CreateUser(User{Username:"bob",Password:"s3cr3t",Email:"bob@zk.gd"})
+    address, _ := mail.ParseAddress("zg@zk.gd")
+    CreateUser(User{Username:"zg",Password:"s3cr3t",Address:address,Created:time.Now()})
+    address, _ = mail.ParseAddress("zg@zk.gd")
+    CreateUser(User{Username:"bob",Password:"s3cr3t",Address:address,Created:time.Now()})
 }
 
-func IsEmailTaken(email string) bool {
-    user := FindUserByEmail(email)
+func IsAddressTaken(address string) bool {
+    Address, _ := mail.ParseAddress(address)
+    user := FindUserByAddress(Address)
     return len(user.Id) > 0
 }
 
@@ -31,10 +40,10 @@ func IsUsernameTaken(username string) bool {
 }
 
 func CheckPassword(u User, password string) bool {
-    return u.Password == GenerateHash(password)
+    return u.Password == GeneratePasswordHash(password)
 }
 
-func FindUserById(id string) User {
+func FindUserById(id uuid) User {
     for _, u := range users {
         if u.Id == id {
             return u
@@ -43,9 +52,9 @@ func FindUserById(id string) User {
     return User{}
 }
 
-func FindUserByEmail(email string) User {
+func FindUserByAddress(address *mail.Address) User {
     for _, u := range users {
-        if u.Email == email {
+        if u.Address == address {
             return u
         }
     }
@@ -63,14 +72,14 @@ func FindUserByUsername(username string) User {
 
 func CreateUser(u User) (User, error) {
     if u.Id = GenerateUuid(); u.Id != "" {
-        u.Password = GenerateHash(u.Password)
+        u.Password = GeneratePasswordHash(u.Password)
         users = append(users, u)
         return u, nil
     }
     return User{}, fmt.Errorf("Could not generate UUID")
 }
 
-func UpdateUser(id string, user User) (User, error) {
+func UpdateUser(id uuid, user User) (User, error) {
     for _, u := range users {
         if u.Id == id {
             u = user
@@ -80,11 +89,11 @@ func UpdateUser(id string, user User) (User, error) {
     return User{}, fmt.Errorf("Not found")
 }
 
-func PatchUser(id string, u User) (User, error) {
+func PatchUser(id uuid, u User) (User, error) {
     for i, user := range users {
         if user.Id == id {
-            if u.Email != "" {
-                user.Email = u.Email
+            if u.Address.Address != "" {
+                user.Address = u.Address
             }
             if u.Username != "" {
                 user.Username = u.Username
@@ -99,7 +108,7 @@ func PatchUser(id string, u User) (User, error) {
     return User{}, fmt.Errorf("Not found")
 }
 
-func DeleteUser(id string) error {
+func DeleteUser(id uuid) error {
     for i, u := range users {
         if u.Id == id {
             users = append(users[:i], users[i+1:]...)
