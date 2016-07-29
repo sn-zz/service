@@ -1,0 +1,6 @@
+# Compiled object files, static and dynamic libs
+*.o
+*.a
+*.so
+
+*.exe
