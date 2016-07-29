@@ -4,16 +4,17 @@ package main
 import (
     "fmt"
     "net/mail"
+    "regexp"
     "time"
 )
 
 type User struct {
-    Id       uuid          `json:"userId"`
-    Username string        `json:"username"`
-    Password string        `json:"password"`
-    Address  *mail.Address `json:"email"`
-    Created  time.Time     `json:"created"`
-    Updated  time.Time     `json:"updated"`
+    Id       uuid
+    Username string
+    Password string
+    Address  *mail.Address
+    Created  time.Time
+    Updated  time.Time
 }
 
 type Users []User
@@ -46,7 +47,7 @@ func FindUserById(id uuid) User {
 
 func FindUserByAddress(address *mail.Address) User {
     for _, u := range users {
-        if u.Address == address {
+        if u.Address.Address == address.Address {
             return u
         }
     }
@@ -62,39 +63,73 @@ func FindUserByUsername(username string) User {
     return User{}
 }
 
-func CreateUser(u User) (User, error) {
-    if u.Id = GenerateUuid(); u.Id != "" {
-        u.Password = GeneratePasswordHash(u.Password)
-        users = append(users, u)
-        return u, nil
+func ValidateUser(user User) error {
+    usernameRegex := regexp.MustCompile(`^[[:alnum:]]+$`)
+    if !usernameRegex.MatchString(user.Username) {
+        return fmt.Errorf("Username is invalid.")
+    }
+
+    length := regexp.MustCompile(`.{10,}`)
+    digits := regexp.MustCompile(`[[:digit:]]`)
+    lowers := regexp.MustCompile(`[[:lower:]]`)
+    uppers := regexp.MustCompile(`[[:upper:]]`)
+    special := regexp.MustCompile(`[!"#$%&'()*+,\-./:;<=>?@[\\\]^_{|}~\x60]`) // \x60 == `
+
+    if !length.MatchString(user.Password) {
+        return fmt.Errorf("Password must be 10 characters or longer.")
+    }
+    if !digits.MatchString(user.Password) {
+        return fmt.Errorf("Password must contain a number.")
+    }
+    if !lowers.MatchString(user.Password) {
+        return fmt.Errorf("Password must contain a lowercase letter.")
+    }
+    if !uppers.MatchString(user.Password) {
+        return fmt.Errorf("Password must contain an uppercase letter.")
+    }
+    if !special.MatchString(user.Password) {
+        return fmt.Errorf("Password must contain a special character.")
+    }
+    return nil
+}
+
+func CreateUser(user User) (User, error) {
+    if user.Id = GenerateUuid(); user.Id != "" {
+        user.Password = GeneratePasswordHash(user.Password)
+        user.Created = time.Now()
+        users = append(users, user)
+        return user, nil
     }
     return User{}, fmt.Errorf("Could not generate UUID")
 }
 
-func UpdateUser(id uuid, user User) (User, error) {
-    for _, u := range users {
-        if u.Id == id {
-            u = user
-            return u, nil
+func UpdateUser(user User) (User, error) {
+    user.Password = GeneratePasswordHash(user.Password)
+    for i, u := range users {
+        if u.Id == user.Id {
+            user.Updated = time.Now()
+            users[i] = user
+            return users[i], nil
         }
     }
     return User{}, fmt.Errorf("Not found")
 }
 
-func PatchUser(id uuid, u User) (User, error) {
-    for i, user := range users {
-        if user.Id == id {
-            if u.Address.Address != "" {
-                user.Address = u.Address
+func PatchUser(user User) (User, error) {
+    for i, u := range users {
+        if u.Id == user.Id {
+            if user.Address.Address != "" {
+                u.Address = user.Address
             }
-            if u.Username != "" {
-                user.Username = u.Username
+            if user.Username != "" {
+                u.Username = user.Username
             }
-            if u.Password != "" {
-                user.Password = u.Password
+            if user.Password != "" {
+                u.Password = GeneratePasswordHash(user.Password)
             }
-            users[i] = user
-            return user, nil
+            u.Updated = time.Now()
+            users[i] = u
+            return users[i], nil
         }
     }
     return User{}, fmt.Errorf("Not found")

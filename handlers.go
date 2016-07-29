@@ -7,6 +7,7 @@ import (
     "io"
     "io/ioutil"
     "net/http"
+    "net/mail"
 
     "github.com/gorilla/mux"
 )
@@ -26,7 +27,7 @@ var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 // POST /auth
 var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    var user User
+    user := User{}
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
     if err != nil {
         panic(err)
@@ -90,7 +91,11 @@ var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 // POST /users/:userId
 var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    var user User
+    var input struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+        Address  string `json:"email"`
+    }
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
     if err != nil {
         panic(err)
@@ -98,12 +103,22 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     if err := r.Body.Close(); err != nil {
         panic(err)
     }
-    if err := json.Unmarshal(body, &user); err != nil {
+    if err := json.Unmarshal(body, &input); err != nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusBadRequest)
-        if err := json.NewEncoder(w).Encode(err); err != nil {
-            panic(err)
-        }
+        fmt.Fprint(w, "Bad Request")
+        return
+    }
+
+    user := User{}
+    user.Username = input.Username
+    user.Password = input.Password
+    user.Address, err = mail.ParseAddress(input.Address)
+    if err := ValidateUser(user); err != nil {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprint(w, err)
+        return
     }
     if user := IsUsernameTaken(user.Username); user {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -115,6 +130,13 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusConflict)
         fmt.Fprint(w, "Address is taken")
+        return
+    }
+
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprint(w, "Email is invalid")
         return
     }
 
@@ -131,10 +153,15 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 // PUT /users/:userId
 var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+        Address  string `json:"email"`
+    }
+
     vars := mux.Vars(r)
     userId := uuid(vars["userId"])
 
-    var user User
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
     if err != nil {
         panic(err)
@@ -142,12 +169,25 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     if err := r.Body.Close(); err != nil {
         panic(err)
     }
-    if err := json.Unmarshal(body, &user); err != nil {
+    if err := json.Unmarshal(body, &input); err != nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusBadRequest)
         if err := json.NewEncoder(w).Encode(err); err != nil {
             panic(err)
         }
+    }
+
+    user := User{}
+    user.Id = userId
+    user.Username = input.Username
+    user.Password = input.Password
+    user.Address, _ = mail.ParseAddress(input.Address)
+
+    if err := ValidateUser(user); err != nil {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprint(w, err)
+        return
     }
     if user := IsUsernameTaken(user.Username); user {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -162,7 +202,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if user, err := UpdateUser(userId, user); err == nil {
+    if user, err := UpdateUser(user); err == nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusOK)
         if err := json.NewEncoder(w).Encode(user); err != nil {
@@ -179,10 +219,15 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 // PATCH /users/:userId
 var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+        Address  string `json:"email"`
+    }
+
     vars := mux.Vars(r)
     userId := uuid(vars["userId"])
 
-    var user User
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
     if err != nil {
         panic(err)
@@ -190,10 +235,23 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     if err := r.Body.Close(); err != nil {
         panic(err)
     }
-    if err := json.Unmarshal(body, &user); err != nil {
+    if err := json.Unmarshal(body, &input); err != nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusBadRequest)
         fmt.Fprint(w, "Bad request")
+        return
+    }
+
+    user := User{}
+    user.Id = userId
+    user.Username = input.Username
+    user.Password = input.Password
+    user.Address, _ = mail.ParseAddress(input.Address)
+
+    if err := ValidateUser(user); err != nil {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprint(w, err)
         return
     }
     if user := IsUsernameTaken(user.Username); user {
@@ -209,7 +267,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if user, err := PatchUser(userId, user); err == nil {
+    if user, err := PatchUser(user); err == nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
         w.WriteHeader(http.StatusOK)
         if err := json.NewEncoder(w).Encode(user); err != nil {
