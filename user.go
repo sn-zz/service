@@ -20,14 +20,6 @@ type Users []User
 
 var users Users
 
-// Give us some seed data
-func init() {
-    address, _ := mail.ParseAddress("zg@zk.gd")
-    CreateUser(User{Username:"zg",Password:"s3cr3t",Address:address,Created:time.Now()})
-    address, _ = mail.ParseAddress("zg@zk.gd")
-    CreateUser(User{Username:"bob",Password:"s3cr3t",Address:address,Created:time.Now()})
-}
-
 func IsAddressTaken(address string) bool {
     Address, _ := mail.ParseAddress(address)
     user := FindUserByAddress(Address)
