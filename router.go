@@ -1,25 +1,21 @@
 // sn - https://github.com/sn
 package main
 
-import (
-    "net/http"
-
-    "github.com/gorilla/mux"
-)
+import "github.com/gorilla/mux"
 
 func NewRouter() *mux.Router {
 
     router := mux.NewRouter().StrictSlash(true)
 
-    router.Handle("/", Index).Methods(http.MethodGet)
-    router.Handle("/auth", Auth).Methods(http.MethodPost)
+    router.Handle("/", Index).Methods("GET")
+    router.Handle("/auth", Auth).Methods("POST")
 
-    router.Handle("/users", UserIndex).Methods(http.MethodGet)
-    router.Handle("/users/{userId}", UserShow).Methods(http.MethodGet)
-    router.Handle("/users/{userId}", UserCreate).Methods(http.MethodPost)
-    router.Handle("/users/{userId}", UserUpdate).Methods(http.MethodPut)
-    router.Handle("/users/{userId}", UserPatch).Methods(http.MethodPatch)
-    router.Handle("/users/{userId}", UserDelete).Methods(http.MethodDelete)
+    router.Handle("/users", UserIndex).Methods("GET")
+    router.Handle("/users/{userId}", UserShow).Methods("GET")
+    router.Handle("/users/{userId}", UserCreate).Methods("POST")
+    router.Handle("/users/{userId}", UserUpdate).Methods("PUT")
+    router.Handle("/users/{userId}", UserPatch).Methods("PATCH")
+    router.Handle("/users/{userId}", UserDelete).Methods("DELETE")
 
     return router
 }
