@@ -3,6 +3,7 @@ package main
 
 import "github.com/gorilla/mux"
 
+// NewRouter sets up the URL routes
 func NewRouter() *mux.Router {
     router := mux.NewRouter().StrictSlash(true)
 

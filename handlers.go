@@ -12,20 +12,23 @@ import (
     "github.com/gorilla/mux"
 )
 
-// GET /index
+// Index handles GET /index
 var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     if auth := r.Header["Authorization"]; auth != nil {
         if session := FindSession(auth[0]); session.Id != "" {
             u := FindUserById(session.UserId)
             fmt.Fprintf(w, "Welcome, %s!\n", u.Username)
-            UpdateSessionTime(session.Id)
+            err := UpdateSessionTime(session.Id)
+            if err != nil {
+                panic(err)
+            }
             return
         }
     }
     fmt.Fprint(w, "Welcome!\n")
 })
 
-// POST /auth
+// Auth handles POST /auth
 var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     user := User{}
     body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
@@ -47,7 +50,10 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     if len(refUser.Id) > 0 {
         if CheckPassword(refUser, user.Password) {
             w.WriteHeader(http.StatusOK)
-            s, _ := CreateSession(refUser.Id)
+            s, err := CreateSession(refUser.Id)
+            if err != nil {
+                panic(err)
+            }
             fmt.Fprintf(w, "%s", GenerateSha1Hash(string(s.Id)))
             return
         }
@@ -60,7 +66,7 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
 })
 
-// GET /users
+// UserIndex handles GET /users
 var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json; charset=UTF-8")
     w.WriteHeader(http.StatusOK)
@@ -69,7 +75,7 @@ var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
-// GET /users/:userId
+// UserShow handles GET /users/:userId
 var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := uuid(vars["userId"])
@@ -89,7 +95,7 @@ var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Not Found")
 })
 
-// POST /users/:userId
+// UserCreate handles POST /users/:userId
 var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var input struct {
         Username string `json:"username"`
@@ -151,7 +157,7 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
-// PUT /users/:userId
+// UserUpdate handles PUT /users/:userId
 var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var input struct {
         Username string `json:"username"`
@@ -181,7 +187,10 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     user.Id = userId
     user.Username = input.Username
     user.Password = input.Password
-    user.Address, _ = mail.ParseAddress(input.Address)
+    user.Address, err = mail.ParseAddress(input.Address)
+    if err != nil {
+        panic(err)
+    }
 
     if err := ValidateUser(user); err != nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -217,7 +226,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Not Found")
 })
 
-// PATCH /users/:userId
+// UserPatch handles PATCH /users/:userId
 var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var input struct {
         Username string `json:"username"`
@@ -246,7 +255,10 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     user.Id = userId
     user.Username = input.Username
     user.Password = input.Password
-    user.Address, _ = mail.ParseAddress(input.Address)
+    user.Address, err = mail.ParseAddress(input.Address)
+    if err != nil {
+        panic(err)
+    }
 
     if err := ValidateUser(user); err != nil {
         w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -282,7 +294,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Not found")
 })
 
-// DELETE /users/:userId
+// UserDelete handles DELETE /users/:userId
 var UserDelete = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     userId := uuid(vars["userId"])

@@ -62,8 +62,14 @@ func TestFindUserById(t *testing.T) {
 }
 
 func TestFindUserByAddress(t *testing.T) {
-    knownAddress, _ := mail.ParseAddress(users[0].Address.Address)
-    unknownAddress, _ := mail.ParseAddress("test@example.com")
+    knownAddress, err := mail.ParseAddress(users[0].Address.Address)
+    if err != nil {
+        t.Error(err)
+    }
+    unknownAddress, err := mail.ParseAddress("test@example.com")
+    if err != nil {
+        t.Error(err)
+    }
 
     if user := FindUserByAddress(knownAddress); len(user.Id) == 0 {
         t.Errorf("Expected known address, got unknown address.")
@@ -88,7 +94,10 @@ func TestFindUserByUsername(t *testing.T) {
 }
 
 func TestValidateUser(t *testing.T) {
-    address, _ := mail.ParseAddress("test@example.com")
+    address, err := mail.ParseAddress("test@example.com")
+    if err != nil {
+        t.Error(err)
+    }
     user := User{Username:"zg",Password:"123456789",Address:address}
     if err := ValidateUser(user); err == nil { // Complains about length
         t.Error(err)
@@ -113,7 +122,10 @@ func TestValidateUser(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
     password := "S3crET!@#$"
-    address, _ := mail.ParseAddress(users[0].Address.Address)
+    address, err := mail.ParseAddress(users[0].Address.Address)
+    if err != nil {
+        t.Error(err)
+    }
     newUser := User{Username:"zzg",Password:password,Address:address}
     u, err := CreateUser(newUser)
     if err != nil || len(users) != 3 {
@@ -128,7 +140,10 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-    address, _ := mail.ParseAddress("zg@zk.gd")
+    address, err := mail.ParseAddress("zg@zk.gd")
+    if err != nil {
+        t.Error(err)
+    }
     userBeforeUpdate := FindUserById(users[0].Id)
     updatedUser := User{Id:users[0].Id,Username:"zgg",Password:"S3crET!@#$",Address:address}
     user, err := UpdateUser(updatedUser)
@@ -150,7 +165,10 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestPatchUser(t *testing.T) {
-    address, _ := mail.ParseAddress("zzg@zk.gd")
+    address, err := mail.ParseAddress("zzg@zk.gd")
+    if err != nil {
+        t.Error(err)
+    }
     userToPatch := FindUserById(users[0].Id)
     userToPatch.Username = "zzg"
     userToPatch.Password = "S3crET!@#$"
@@ -175,16 +193,25 @@ func TestPatchUser(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
     user := FindUserById(users[0].Id)
-    DeleteUser(user.Id)
+    err := DeleteUser(user.Id)
+    if err != nil {
+        t.Error(err)
+    }
     if users[0].Id == user.Id {
         t.Errorf("User was not deleted.")
     }
 }
 
 func TestMain(m *testing.M) {
-    address, _ := mail.ParseAddress("zg@zk.gd")
+    address, err := mail.ParseAddress("zg@zk.gd")
+    if err != nil {
+        panic(err)
+    }
     users = append(users, User{Id:"27EFE1BF-3779-7295-593D-88AEFD936AF6",Username:"zg",Password:GeneratePasswordHash("s3cr3t"),Address:address,Created:time.Now()})
-    address, _ = mail.ParseAddress("bob@zk.gd")
+    address, err = mail.ParseAddress("bob@zk.gd")
+    if err != nil {
+        panic(err)
+    }
     users = append(users, User{Id:"5A86B3A9-5EE0-F24A-8347-9325EC1BD8B5",Username:"bob",Password:GeneratePasswordHash("s3cr3t"),Address:address,Created:time.Now()})
     os.Exit(m.Run())
 }
