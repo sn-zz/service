@@ -10,10 +10,10 @@ import (
 	"net/mail"
 
 	"github.com/gorilla/mux"
-    "github.com/sn/service/helpers"
-    "github.com/sn/service/session"
-    "github.com/sn/service/types"
-    "github.com/sn/service/user"
+	"github.com/sn/service/helpers"
+	"github.com/sn/service/session"
+	"github.com/sn/service/types"
+	"github.com/sn/service/user"
 )
 
 // Index handles GET /index
@@ -226,11 +226,11 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u = user.Update(u)
-    w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-    w.WriteHeader(http.StatusOK)
-    if err := json.NewEncoder(w).Encode(u); err != nil {
-        panic(err)
-    }
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(u); err != nil {
+		panic(err)
+	}
 })
 
 // UserPatch handles PATCH /users/:userID
@@ -294,12 +294,12 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    u = user.Patch(u)
-    w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-    w.WriteHeader(http.StatusOK)
-    if err := json.NewEncoder(w).Encode(u); err != nil {
-        panic(err)
-    }
+	u = user.Patch(u)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(u); err != nil {
+		panic(err)
+	}
 })
 
 // UserDelete handles DELETE /users/:userID

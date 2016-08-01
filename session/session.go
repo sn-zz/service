@@ -11,7 +11,7 @@ import (
 
 // Session contains a user's session
 type Session struct {
-	ID	  types.UUID
+	ID      types.UUID
 	UserID  types.UUID
 	Expires time.Time
 }
@@ -47,7 +47,7 @@ func GetAll() []Session {
 func Expire(id types.UUID) error {
 	for i, s := range sessions {
 		if s.ID == id {
-            sessions[i].Expires = time.Time{}
+			sessions[i].Expires = time.Time{}
 			return nil
 		}
 	}
@@ -77,10 +77,10 @@ func Bump(id types.UUID) error {
 
 // Clean removes any expired sessions
 func Clean() {
-    for i := 0; i < len(sessions); i++ {
+	for i := 0; i < len(sessions); i++ {
 		if time.Now().After(sessions[i].Expires) {
 			Remove(sessions[i].ID)
-            i--
+			i--
 		}
 	}
 }

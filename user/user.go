@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"time"
 
-    "github.com/sn/service/helpers"
-    "github.com/sn/service/types"
+	"github.com/sn/service/helpers"
+	"github.com/sn/service/types"
 )
 
 // User represents a user
@@ -30,7 +30,7 @@ func CheckPassword(u User, password string) bool {
 
 // GetAll returns all users
 func GetAll() []User {
-    return users
+	return users
 }
 
 // FindByID looks for a user given a UUID
@@ -124,7 +124,7 @@ func Update(user User) User {
 			return users[i]
 		}
 	}
-    return User{}
+	return User{}
 }
 
 // Patch patches a user in the users list based on the user ID
@@ -152,7 +152,7 @@ func Patch(user User) User {
 func Delete(id types.UUID) error {
 	for i, u := range users {
 		if u.ID == id {
-            users = append(users[:i], users[i+1:]...)
+			users = append(users[:i], users[i+1:]...)
 			return nil
 		}
 	}

@@ -2,18 +2,18 @@
 package user
 
 import (
-    "fmt"
+	"fmt"
 	"net/mail"
-    "os"
-    "strings"
+	"os"
+	"strings"
 	"testing"
-    "time"
+	"time"
 
-    "github.com/sn/service/helpers"
+	"github.com/sn/service/helpers"
 )
 
 func TestCheckPassword(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	u := FindByID(users[0].ID)
 	correctPassword := "1@E4s67890"
 	incorrectPassword := "s3cret"
@@ -28,7 +28,7 @@ func TestCheckPassword(t *testing.T) {
 }
 
 func TestFindByID(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	knownID := users[0].ID
 	unknownID := helpers.GenerateUUID()
 
@@ -42,7 +42,7 @@ func TestFindByID(t *testing.T) {
 }
 
 func TestFindByAddress(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	knownAddress, err := mail.ParseAddress(users[0].Address.Address)
 	if err != nil {
 		t.Error(err)
@@ -62,7 +62,7 @@ func TestFindByAddress(t *testing.T) {
 }
 
 func TestFindByUsername(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	knownUsername := users[0].Username
 	unknownUsername := "unknown-username"
 
@@ -103,15 +103,15 @@ func TestValidate(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	password := "S3crET!@#$"
 	address, err := mail.ParseAddress(users[0].Address.Address + ".com")
-    fmt.Println(address.Address)
+	fmt.Println(address.Address)
 	if err != nil {
 		t.Error(err)
 	}
-    currentUserCount := len(users)
-    u := Create(User{Username: "zzg", Password: password, Address: address})
+	currentUserCount := len(users)
+	u := Create(User{Username: "zzg", Password: password, Address: address})
 	if len(GetAll()) == currentUserCount {
 		t.Errorf("User wasn't created.")
 	}
@@ -124,7 +124,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	address, err := mail.ParseAddress("zg@zk.gd")
 	if err != nil {
 		t.Error(err)
@@ -132,9 +132,9 @@ func TestUpdate(t *testing.T) {
 	userBeforeUpdate := FindByID(users[0].ID)
 	updatedUser := User{ID: users[0].ID, Username: "zgg", Password: "S3crET!@#$", Address: address}
 	u := Update(updatedUser)
-    if len(u.ID) == 0 {
-        t.Errorf("User was not found.")
-    }
+	if len(u.ID) == 0 {
+		t.Errorf("User was not found.")
+	}
 	if u.Username != updatedUser.Username {
 		t.Errorf("Username was not updated.")
 	}
@@ -150,7 +150,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestPatch(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	address, err := mail.ParseAddress("zzg@zk.gd")
 	if err != nil {
 		t.Error(err)
@@ -160,9 +160,9 @@ func TestPatch(t *testing.T) {
 	userToPatch.Password = "S3crET!@#$"
 	userToPatch.Address = address
 	u := Patch(userToPatch)
-    if len(u.ID) == 0 {
-        t.Errorf("User was not found.")
-    }
+	if len(u.ID) == 0 {
+		t.Errorf("User was not found.")
+	}
 	if u.Username != userToPatch.Username {
 		t.Errorf("Username was not patched.")
 	}
@@ -178,7 +178,7 @@ func TestPatch(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-    users := GetAll()
+	users := GetAll()
 	u := FindByID(users[0].ID)
 	err := Delete(u.ID)
 	if err != nil {
@@ -190,15 +190,15 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-    usernames := [4]string{"alex", "blake", "corey", "devon"}
-    for _, un := range usernames {
-        addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
-        if err != nil {
-            panic(err)
-        }
-        u := User{Username: un, Password: "1@E4s67890", Address: addr, Created: time.Now()}
-        u = Create(u)
-    }
+	usernames := [4]string{"alex", "blake", "corey", "devon"}
+	for _, un := range usernames {
+		addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
+		if err != nil {
+			panic(err)
+		}
+		u := User{Username: un, Password: "1@E4s67890", Address: addr, Created: time.Now()}
+		u = Create(u)
+	}
 
 	os.Exit(m.Run())
 }

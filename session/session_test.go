@@ -2,14 +2,14 @@
 package session
 
 import (
-    "net/mail"
-    "os"
-    "strings"
+	"net/mail"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
-    "github.com/sn/service/helpers"
-    "github.com/sn/service/user"
+	"github.com/sn/service/helpers"
+	"github.com/sn/service/user"
 )
 
 func TestCreate(t *testing.T) {
@@ -27,32 +27,32 @@ func TestCreate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-    sessions := GetAll()
+	sessions := GetAll()
 	s := Get(sessions[0].ID)
 	if s.Expires.Sub(sessions[0].Expires) != 0 {
 		t.Errorf("Incorrect session was obtained.")
 	}
-    users := user.GetAll()
+	users := user.GetAll()
 	if s.UserID != users[0].ID {
 		t.Errorf("Incorrect user ID associated with session.")
 	}
 }
 
 func TestFind(t *testing.T) {
-    sessions := GetAll()
+	sessions := GetAll()
 	sessionHash := helpers.GenerateSha1Hash(string(sessions[0].ID))
 	s := Find(sessionHash)
 	if s.Expires.Sub(sessions[0].Expires) != 0 {
 		t.Errorf("Incorrect session was obtained.")
 	}
-    users := user.GetAll()
+	users := user.GetAll()
 	if s.UserID != users[0].ID {
 		t.Errorf("Incorrect user ID associated with session.")
 	}
 }
 
 func TestBump(t *testing.T) {
-    sessions := GetAll()
+	sessions := GetAll()
 	s := Get(sessions[0].ID)
 	err := Bump(sessions[0].ID)
 	if err != nil {
@@ -64,28 +64,28 @@ func TestBump(t *testing.T) {
 }
 
 func TestClean(t *testing.T) {
-    sessions := GetAll()
+	sessions := GetAll()
 	for _, s := range sessions {
-        Expire(s.ID)
+		Expire(s.ID)
 	}
 	Clean()
-    sessions = GetAll()
+	sessions = GetAll()
 	if len(sessions) != 0 {
 		t.Errorf("Sessions did not clean correctly.")
 	}
 }
 
 func TestMain(m *testing.M) {
-    usernames := [4]string{"alex", "blake", "corey", "devon"}
-    for _, un := range usernames {
-        addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
-        if err != nil {
-            panic(err)
-        }
-        u := user.User{Username: un, Password: helpers.GeneratePasswordHash("s3cr3t"), Address: addr, Created: time.Now()}
-        u = user.Create(u)
-        Create(u.ID)
-    }
+	usernames := [4]string{"alex", "blake", "corey", "devon"}
+	for _, un := range usernames {
+		addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
+		if err != nil {
+			panic(err)
+		}
+		u := user.User{Username: un, Password: helpers.GeneratePasswordHash("s3cr3t"), Address: addr, Created: time.Now()}
+		u = user.Create(u)
+		Create(u.ID)
+	}
 
 	os.Exit(m.Run())
 }

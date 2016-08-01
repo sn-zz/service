@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/gorilla/handlers"
-    "github.com/sn/service/router"
+	"github.com/sn/service/router"
 )
 
 func main() {

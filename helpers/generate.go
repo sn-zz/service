@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/scrypt"
 
-    "github.com/sn/service/types"
+	"github.com/sn/service/types"
 )
 
 // GenerateUUID generates a universally unique identifier
