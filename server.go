@@ -1,3 +1,5 @@
+// Package server is the main program that initiates the server.
+//
 // sn - https://github.com/sn
 package server
 

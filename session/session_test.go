@@ -1,3 +1,5 @@
+// Package session manages the sessions for the application.
+//
 // sn - https://github.com/sn
 package session
 

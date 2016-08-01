@@ -1,3 +1,5 @@
+// Package user manages the users for the application.
+//
 // sn - https://github.com/sn
 package user
 

@@ -1,3 +1,5 @@
+// Package router contains endpoint information for the service.
+//
 // sn - https://github.com/sn
 package router
 

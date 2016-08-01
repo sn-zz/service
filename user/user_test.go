@@ -1,3 +1,5 @@
+// Package user manages the users for the application.
+//
 // sn - https://github.com/sn
 package user
 
@@ -202,7 +204,7 @@ func TestMain(m *testing.M) {
 			panic(err)
 		}
 		u := User{Username: un, Password: "1@E4s67890", Address: addr, Created: time.Now()}
-		u = Create(u)
+		_ = Create(u)
 	}
 
 	os.Exit(m.Run())

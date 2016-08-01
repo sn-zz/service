@@ -1,3 +1,5 @@
+// Package helpers are helper functions used throughout the application.
+//
 // sn - https://github.com/sn
 package helpers
 
