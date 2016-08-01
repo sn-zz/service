@@ -1,37 +1,10 @@
+// sn - https://github.com/sn
 package main
 
 import (
 	"net/mail"
-	"os"
 	"testing"
-	"time"
 )
-
-func TestIsAddressTaken(t *testing.T) {
-	knownAddress := users[0].Address.Address
-	unknownAddress := "test@example.com"
-
-	if !IsAddressTaken(knownAddress) {
-		t.Errorf("Expected address taken, got address not taken.")
-	}
-
-	if IsAddressTaken(unknownAddress) {
-		t.Errorf("Expected address not taken, got address taken.")
-	}
-}
-
-func TestIsUsernameTaken(t *testing.T) {
-	knownUsername := users[0].Username
-	unknownUsername := "unknown-username"
-
-	if !IsUsernameTaken(knownUsername) {
-		t.Errorf("Expected username taken, got username not taken.")
-	}
-
-	if IsUsernameTaken(unknownUsername) {
-		t.Errorf("Expected username not taken, got username taken.")
-	}
-}
 
 func TestCheckPassword(t *testing.T) {
 	id := users[0].Id
@@ -127,8 +100,8 @@ func TestCreateUser(t *testing.T) {
 		t.Error(err)
 	}
 	newUser := User{Username: "zzg", Password: password, Address: address}
-	u, err := CreateUser(newUser)
-	if err != nil || len(users) != 3 {
+	u := CreateUser(newUser)
+	if len(users) != 3 {
 		t.Errorf("User wasn't created.")
 	}
 	if u.Created.IsZero() {
@@ -200,18 +173,4 @@ func TestDeleteUser(t *testing.T) {
 	if users[0].Id == user.Id {
 		t.Errorf("User was not deleted.")
 	}
-}
-
-func TestMain(m *testing.M) {
-	address, err := mail.ParseAddress("zg@zk.gd")
-	if err != nil {
-		panic(err)
-	}
-	users = append(users, User{Id: "27EFE1BF-3779-7295-593D-88AEFD936AF6", Username: "zg", Password: GeneratePasswordHash("s3cr3t"), Address: address, Created: time.Now()})
-	address, err = mail.ParseAddress("bob@zk.gd")
-	if err != nil {
-		panic(err)
-	}
-	users = append(users, User{Id: "5A86B3A9-5EE0-F24A-8347-9325EC1BD8B5", Username: "bob", Password: GeneratePasswordHash("s3cr3t"), Address: address, Created: time.Now()})
-	os.Exit(m.Run())
 }

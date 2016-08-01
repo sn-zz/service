@@ -8,9 +8,9 @@ import (
 
 // Session contains a user's session
 type Session struct {
-	Id      uuid      `json:"sessionId"`
-	UserId  uuid      `json:"userId"`
-	Expires time.Time `json:"expires"`
+	Id      uuid
+	UserId  uuid
+	Expires time.Time
 }
 
 // Sessions contains all sessions
@@ -22,13 +22,10 @@ const SessionTime = 86400
 var sessions Sessions
 
 // CreateSession creates a new session
-func CreateSession(userId uuid) (Session, error) {
-	if id := GenerateUuid(); id != "" {
-		s := Session{Id: id, UserId: userId, Expires: time.Now().Add(SessionTime)}
-		sessions = append(sessions, s)
-		return s, nil
-	}
-	return Session{}, fmt.Errorf("Could not generate UUID")
+func CreateSession(userId uuid) Session {
+	s := Session{Id: GenerateUuid(), UserId: userId, Expires: time.Now().Add(SessionTime)}
+	sessions = append(sessions, s)
+	return s
 }
 
 // GetSession retrieves a session given a user ID
@@ -56,6 +53,7 @@ func UpdateSessionTime(id uuid) error {
 	for i, s := range sessions {
 		if s.Id == id {
 			sessions[i].Expires = time.Now().Add(SessionTime)
+			return nil
 		}
 	}
 	return fmt.Errorf("Could not find session")
@@ -65,7 +63,11 @@ func UpdateSessionTime(id uuid) error {
 func CleanSessions() {
 	for i, s := range sessions {
 		if time.Now().After(s.Expires) {
-			sessions = append(sessions[:i], sessions[i+1:]...)
+			if len(sessions) > 1 {
+				sessions = append(sessions[:i], sessions[i+1:]...)
+			} else {
+				sessions = make([]Session, 0)
+			}
 		}
 	}
 }

@@ -23,22 +23,6 @@ type Users []User
 
 var users Users
 
-// IsAddressTaken checks if an address is taken
-func IsAddressTaken(address string) bool {
-	Address, err := mail.ParseAddress(address)
-	if err != nil {
-		panic(err)
-	}
-	user := FindUserByAddress(Address)
-	return len(user.Id) > 0
-}
-
-// IsUsernameTaken checks if a username is taken
-func IsUsernameTaken(username string) bool {
-	user := FindUserByUsername(username)
-	return len(user.Id) > 0
-}
-
 // CheckPassword validates a password
 func CheckPassword(u User, password string) bool {
 	return u.Password == GeneratePasswordHash(password)
@@ -86,43 +70,43 @@ func FindUserByUsername(username string) User {
 //   - contains at least one special character.
 func ValidateUser(user User) error {
 	usernameRegex := regexp.MustCompile(`^[[:alnum:]]+$`)
-	if !usernameRegex.MatchString(user.Username) {
+	if len(user.Username) > 0 && !usernameRegex.MatchString(user.Username) {
 		return fmt.Errorf("Username is invalid.")
 	}
 
-	length := regexp.MustCompile(`.{10,}`)
-	digits := regexp.MustCompile(`[[:digit:]]`)
-	lowers := regexp.MustCompile(`[[:lower:]]`)
-	uppers := regexp.MustCompile(`[[:upper:]]`)
-	special := regexp.MustCompile(`[!"#$%&'()*+,\-./:;<=>?@[\\\]^_{|}~\x60]`) // \x60 == `
+	if len(user.Password) > 0 {
+		length := regexp.MustCompile(`.{10,}`)
+		digits := regexp.MustCompile(`[[:digit:]]`)
+		lowers := regexp.MustCompile(`[[:lower:]]`)
+		uppers := regexp.MustCompile(`[[:upper:]]`)
+		special := regexp.MustCompile(`[!"#$%&'()*+,\-./:;<=>?@[\\\]^_{|}~\x60]`) // \x60 == `
 
-	if !length.MatchString(user.Password) {
-		return fmt.Errorf("Password must be 10 characters or longer.")
-	}
-	if !digits.MatchString(user.Password) {
-		return fmt.Errorf("Password must contain a number.")
-	}
-	if !lowers.MatchString(user.Password) {
-		return fmt.Errorf("Password must contain a lowercase letter.")
-	}
-	if !uppers.MatchString(user.Password) {
-		return fmt.Errorf("Password must contain an uppercase letter.")
-	}
-	if !special.MatchString(user.Password) {
-		return fmt.Errorf("Password must contain a special character.")
+		if !length.MatchString(user.Password) {
+			return fmt.Errorf("Password must be 10 characters or longer.")
+		}
+		if !digits.MatchString(user.Password) {
+			return fmt.Errorf("Password must contain a number.")
+		}
+		if !lowers.MatchString(user.Password) {
+			return fmt.Errorf("Password must contain a lowercase letter.")
+		}
+		if !uppers.MatchString(user.Password) {
+			return fmt.Errorf("Password must contain an uppercase letter.")
+		}
+		if !special.MatchString(user.Password) {
+			return fmt.Errorf("Password must contain a special character.")
+		}
 	}
 	return nil
 }
 
 // CreateUser adds a user to the users list
-func CreateUser(user User) (User, error) {
-	if user.Id = GenerateUuid(); user.Id != "" {
-		user.Password = GeneratePasswordHash(user.Password)
-		user.Created = time.Now()
-		users = append(users, user)
-		return user, nil
-	}
-	return User{}, fmt.Errorf("Could not generate UUID")
+func CreateUser(user User) User {
+	user.Id = GenerateUuid()
+	user.Password = GeneratePasswordHash(user.Password)
+	user.Created = time.Now()
+	users = append(users, user)
+	return user
 }
 
 // UpdateUser updates a user in the users list based on the user ID

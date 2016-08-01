@@ -50,10 +50,7 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	if len(refUser.Id) > 0 {
 		if CheckPassword(refUser, user.Password) {
 			w.WriteHeader(http.StatusOK)
-			s, err := CreateSession(refUser.Id)
-			if err != nil {
-				panic(err)
-			}
+			s := CreateSession(refUser.Id)
 			fmt.Fprintf(w, "%s", GenerateSha1Hash(string(s.Id)))
 			return
 		}
@@ -120,40 +117,44 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	user.Username = input.Username
 	user.Password = input.Password
 	user.Address, err = mail.ParseAddress(input.Address)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "Unable to parse address.")
+		return
+	}
 	if err := ValidateUser(user); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, err)
 		return
 	}
-	if user := IsUsernameTaken(user.Username); user {
+	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Username is taken")
+		fmt.Fprint(w, "Username is taken.")
 		return
 	}
-	if user := IsAddressTaken(user.Address.Address); user {
+	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Address is taken")
+		fmt.Fprint(w, "Address is taken.")
 		return
 	}
 
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "Email is invalid")
+		fmt.Fprint(w, "Email is invalid.")
 		return
 	}
 
-	if user, err := CreateUser(user); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(user); err != nil {
-			fmt.Fprint(w, err)
-			panic(err)
-		}
-		return
+	user = CreateUser(user)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		fmt.Fprint(w, err)
+		panic(err)
 	}
 })
 
@@ -189,7 +190,10 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	user.Password = input.Password
 	user.Address, err = mail.ParseAddress(input.Address)
 	if err != nil {
-		panic(err)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "Unable to parse address.")
+		return
 	}
 
 	if err := ValidateUser(user); err != nil {
@@ -198,16 +202,16 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 		return
 	}
-	if user := IsUsernameTaken(user.Username); user {
+	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Username is taken")
+		fmt.Fprint(w, "Username is taken.")
 		return
 	}
-	if user := IsAddressTaken(user.Address.Address); user {
+	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Address is taken")
+		fmt.Fprint(w, "Address is taken.")
 		return
 	}
 
@@ -247,7 +251,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, &input); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "Bad request")
+		fmt.Fprint(w, "Bad Request")
 		return
 	}
 
@@ -257,25 +261,33 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	user.Password = input.Password
 	user.Address, err = mail.ParseAddress(input.Address)
 	if err != nil {
-		panic(err)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "Unable to parse address.")
+		return
 	}
-
 	if err := ValidateUser(user); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, err)
 		return
 	}
-	if user := IsUsernameTaken(user.Username); user {
+	if findUser := FindUserById(user.Id); len(findUser.Id) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Username is taken")
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Not found")
 		return
 	}
-	if user := IsAddressTaken(user.Address.Address); user {
+	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
-		fmt.Fprint(w, "Address is taken")
+		fmt.Fprint(w, "Username is taken.")
+		return
+	}
+	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprint(w, "Address is taken.")
 		return
 	}
 
