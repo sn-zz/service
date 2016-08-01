@@ -3,5 +3,5 @@
 // sn - https://github.com/sn
 package types
 
-// Type UUID represents a universally unique identifier
+// UUID represents a universally unique identifier
 type UUID string
