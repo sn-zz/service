@@ -39,22 +39,22 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-    sessions := GetAll()
-    if len(sessions) == 0 {
-        t.Errorf("Incorrect sessions length.")
-    }
+	sessions := GetAll()
+	if len(sessions) == 0 {
+		t.Errorf("Incorrect sessions length.")
+	}
 }
 
 func TestExpire(t *testing.T) {
-    sessions := GetAll()
-    for _, s := range sessions {
-        Expire(s.ID)
-    }
-    for _, s := range sessions {
-        if !s.Expires.IsZero() {
-            t.Errorf("Incorrect session expiration.")
-        }
-    }
+	sessions := GetAll()
+	for _, s := range sessions {
+		Expire(s.ID)
+	}
+	for _, s := range sessions {
+		if !s.Expires.IsZero() {
+			t.Errorf("Incorrect session expiration.")
+		}
+	}
 }
 
 func TestFind(t *testing.T) {
@@ -95,12 +95,12 @@ func TestClean(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-    s := Create(helpers.GenerateUUID())
-    sessions := GetAll()
-    Remove(s.ID)
-    if len(sessions) == len(GetAll()) {
-        t.Errorf("Session was not removed.")
-    }
+	s := Create(helpers.GenerateUUID())
+	sessions := GetAll()
+	Remove(s.ID)
+	if len(sessions) == len(GetAll()) {
+		t.Errorf("Session was not removed.")
+	}
 }
 
 func TestMain(m *testing.M) {

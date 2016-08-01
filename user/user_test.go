@@ -27,10 +27,10 @@ func TestCheckPassword(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-    users := GetAll()
-    if len(users) == 0 {
-        t.Errorf("Incorrect users length.")
-    }
+	users := GetAll()
+	if len(users) == 0 {
+		t.Errorf("Incorrect users length.")
+	}
 }
 
 func TestFindByID(t *testing.T) {
