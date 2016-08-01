@@ -202,6 +202,12 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 		return
 	}
+	if findUser := FindUserById(user.Id); len(findUser.Id) == 0 {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Not found")
+		return
+	}
 	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
@@ -215,19 +221,12 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user, err := UpdateUser(user); err == nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(user); err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	// If we didn't find it, 404
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprint(w, "Not Found")
+	user = UpdateUser(user)
+    w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+    w.WriteHeader(http.StatusOK)
+    if err := json.NewEncoder(w).Encode(user); err != nil {
+        panic(err)
+    }
 })
 
 // UserPatch handles PATCH /users/:userId
@@ -291,19 +290,12 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user, err := PatchUser(user); err == nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(user); err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	// If we didn't find it, 404
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprint(w, "Not found")
+    user = PatchUser(user)
+    w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+    w.WriteHeader(http.StatusOK)
+    if err := json.NewEncoder(w).Encode(user); err != nil {
+        panic(err)
+    }
 })
 
 // UserDelete handles DELETE /users/:userId

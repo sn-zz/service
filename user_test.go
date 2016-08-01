@@ -119,10 +119,10 @@ func TestUpdateUser(t *testing.T) {
 	}
 	userBeforeUpdate := FindUserById(users[0].Id)
 	updatedUser := User{Id: users[0].Id, Username: "zgg", Password: "S3crET!@#$", Address: address}
-	user, err := UpdateUser(updatedUser)
-	if err != nil {
-		t.Error(err)
-	}
+	user := UpdateUser(updatedUser)
+    if len(user.Id) == 0 {
+        t.Errorf("User was not found.")
+    }
 	if user.Username != updatedUser.Username {
 		t.Errorf("Username was not updated.")
 	}
@@ -146,10 +146,10 @@ func TestPatchUser(t *testing.T) {
 	userToPatch.Username = "zzg"
 	userToPatch.Password = "S3crET!@#$"
 	userToPatch.Address = address
-	user, err := PatchUser(userToPatch)
-	if err != nil {
-		t.Error(err)
-	}
+	user := PatchUser(userToPatch)
+    if len(user.Id) == 0 {
+        t.Errorf("User was not found.")
+    }
 	if user.Username != userToPatch.Username {
 		t.Errorf("Username was not patched.")
 	}

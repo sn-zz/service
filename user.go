@@ -110,20 +110,20 @@ func CreateUser(user User) User {
 }
 
 // UpdateUser updates a user in the users list based on the user ID
-func UpdateUser(user User) (User, error) {
+func UpdateUser(user User) User {
 	user.Password = GeneratePasswordHash(user.Password)
 	for i, u := range users {
 		if u.Id == user.Id {
 			user.Updated = time.Now()
 			users[i] = user
-			return users[i], nil
+			return users[i]
 		}
 	}
-	return User{}, fmt.Errorf("Not found")
+    return User{}
 }
 
 // PatchUser patches a user in the users list based on the user ID
-func PatchUser(user User) (User, error) {
+func PatchUser(user User) User {
 	for i, u := range users {
 		if u.Id == user.Id {
 			if user.Address.Address != "" {
@@ -137,10 +137,10 @@ func PatchUser(user User) (User, error) {
 			}
 			u.Updated = time.Now()
 			users[i] = u
-			return users[i], nil
+			return users[i]
 		}
 	}
-	return User{}, fmt.Errorf("Not found")
+	return User{}
 }
 
 // DeleteUser deletes a user based on the user ID
