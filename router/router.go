@@ -1,5 +1,5 @@
 // sn - https://github.com/sn
-package main
+package router
 
 import "github.com/gorilla/mux"
 

@@ -1,16 +1,19 @@
 // sn - https://github.com/sn
-package main
+package user
 
 import (
 	"fmt"
 	"net/mail"
 	"regexp"
 	"time"
+
+    "github.com/sn/service/helpers"
+    "github.com/sn/service/types"
 )
 
 // User represents a user
 type User struct {
-	ID       uuid
+	ID       types.UUID
 	Username string
 	Password string
 	Address  *mail.Address
@@ -18,18 +21,20 @@ type User struct {
 	Updated  time.Time
 }
 
-// Users contains all users
-type Users []User
-
-var users Users
+var users []User
 
 // CheckPassword validates a password
 func CheckPassword(u User, password string) bool {
-	return u.Password == GeneratePasswordHash(password)
+	return u.Password == helpers.GeneratePasswordHash(password)
 }
 
-// FindUserByID looks for a user given a UUID
-func FindUserByID(id uuid) User {
+// GetAll returns all users
+func GetAll() []User {
+    return users
+}
+
+// FindByID looks for a user given a UUID
+func FindByID(id types.UUID) User {
 	for _, u := range users {
 		if u.ID == id {
 			return u
@@ -38,8 +43,8 @@ func FindUserByID(id uuid) User {
 	return User{}
 }
 
-// FindUserByAddress finds a user by address
-func FindUserByAddress(address *mail.Address) User {
+// FindByAddress finds a user by address
+func FindByAddress(address *mail.Address) User {
 	for _, u := range users {
 		if u.Address.Address == address.Address {
 			return u
@@ -48,8 +53,8 @@ func FindUserByAddress(address *mail.Address) User {
 	return User{}
 }
 
-// FindUserByUsername finds a user by username
-func FindUserByUsername(username string) User {
+// FindByUsername finds a user by username
+func FindByUsername(username string) User {
 	for _, u := range users {
 		if u.Username == username {
 			return u
@@ -58,7 +63,7 @@ func FindUserByUsername(username string) User {
 	return User{}
 }
 
-// ValidateUser validates a username, password, and email
+// Validate validates a username, password, and email
 //
 // A user is valid if:
 // - the username contains only alphanumerical characters,
@@ -68,7 +73,7 @@ func FindUserByUsername(username string) User {
 //   - contains at least one lowercase letter,
 //   - contains at least one uppercase letter,
 //   - contains at least one special character.
-func ValidateUser(user User) error {
+func Validate(user User) error {
 	usernameRegex := regexp.MustCompile(`^[[:alnum:]]+$`)
 	if len(user.Username) > 0 && !usernameRegex.MatchString(user.Username) {
 		return fmt.Errorf("Username is invalid.")
@@ -100,18 +105,18 @@ func ValidateUser(user User) error {
 	return nil
 }
 
-// CreateUser adds a user to the users list
-func CreateUser(user User) User {
-	user.ID = GenerateUUID()
-	user.Password = GeneratePasswordHash(user.Password)
+// Create adds a user to the users list
+func Create(user User) User {
+	user.ID = helpers.GenerateUUID()
+	user.Password = helpers.GeneratePasswordHash(user.Password)
 	user.Created = time.Now()
 	users = append(users, user)
 	return user
 }
 
-// UpdateUser updates a user in the users list based on the user ID
-func UpdateUser(user User) User {
-	user.Password = GeneratePasswordHash(user.Password)
+// Update updates a user in the users list based on the user ID
+func Update(user User) User {
+	user.Password = helpers.GeneratePasswordHash(user.Password)
 	for i, u := range users {
 		if u.ID == user.ID {
 			user.Updated = time.Now()
@@ -122,8 +127,8 @@ func UpdateUser(user User) User {
     return User{}
 }
 
-// PatchUser patches a user in the users list based on the user ID
-func PatchUser(user User) User {
+// Patch patches a user in the users list based on the user ID
+func Patch(user User) User {
 	for i, u := range users {
 		if u.ID == user.ID {
 			if user.Address.Address != "" {
@@ -133,7 +138,7 @@ func PatchUser(user User) User {
 				u.Username = user.Username
 			}
 			if user.Password != "" {
-				u.Password = GeneratePasswordHash(user.Password)
+				u.Password = helpers.GeneratePasswordHash(user.Password)
 			}
 			u.Updated = time.Now()
 			users[i] = u
@@ -143,11 +148,11 @@ func PatchUser(user User) User {
 	return User{}
 }
 
-// DeleteUser deletes a user based on the user ID
-func DeleteUser(id uuid) error {
+// Delete deletes a user based on the user ID
+func Delete(id types.UUID) error {
 	for i, u := range users {
 		if u.ID == id {
-			users = append(users[:i], users[i+1:]...)
+            users = append(users[:i], users[i+1:]...)
 			return nil
 		}
 	}

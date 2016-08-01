@@ -1,4 +1,4 @@
 // sn - https://github.com/sn
-package main
+package types
 
-type uuid string
+type UUID string
