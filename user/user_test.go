@@ -2,7 +2,6 @@
 package user
 
 import (
-	"fmt"
 	"net/mail"
 	"os"
 	"strings"
@@ -25,6 +24,13 @@ func TestCheckPassword(t *testing.T) {
 	if CheckPassword(u, incorrectPassword) {
 		t.Errorf("Expected password failure, got success.")
 	}
+}
+
+func TestGetAll(t *testing.T) {
+    users := GetAll()
+    if len(users) == 0 {
+        t.Errorf("Incorrect users length.")
+    }
 }
 
 func TestFindByID(t *testing.T) {
@@ -106,7 +112,6 @@ func TestCreate(t *testing.T) {
 	users := GetAll()
 	password := "S3crET!@#$"
 	address, err := mail.ParseAddress(users[0].Address.Address + ".com")
-	fmt.Println(address.Address)
 	if err != nil {
 		t.Error(err)
 	}
@@ -177,7 +182,7 @@ func TestPatch(t *testing.T) {
 	}
 }
 
-func TestDeleteUser(t *testing.T) {
+func TestDelete(t *testing.T) {
 	users := GetAll()
 	u := FindByID(users[0].ID)
 	err := Delete(u.ID)
