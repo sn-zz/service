@@ -7,12 +7,12 @@ import (
 )
 
 func TestCreateSession(t *testing.T) {
-	userId := GenerateUuid()
-	if userId == "" {
+	userID := GenerateUUID()
+	if userID == "" {
 		t.Errorf("Could not generate UUID")
 	}
-	newSession := CreateSession(userId)
-	if newSession.UserId != userId {
+	newSession := CreateSession(userID)
+	if newSession.UserID != userID {
 		t.Errorf("User UUID mismatch.")
 	}
 	if newSession.Expires.IsZero() {
@@ -21,33 +21,33 @@ func TestCreateSession(t *testing.T) {
 }
 
 func TestGetSession(t *testing.T) {
-	session := GetSession(sessions[0].Id)
+	session := GetSession(sessions[0].ID)
 	if session.Expires.Sub(sessions[0].Expires) != 0 {
 		t.Errorf("Incorrect session was obtained.")
 	}
-	if session.UserId != users[0].Id {
+	if session.UserID != users[0].ID {
 		t.Errorf("Incorrect user ID associated with session.")
 	}
 }
 
 func TestFindSession(t *testing.T) {
-	sessionHash := GenerateSha1Hash(string(sessions[0].Id))
+	sessionHash := GenerateSha1Hash(string(sessions[0].ID))
 	session := FindSession(sessionHash)
 	if session.Expires.Sub(sessions[0].Expires) != 0 {
 		t.Errorf("Incorrect session was obtained.")
 	}
-	if session.UserId != users[0].Id {
+	if session.UserID != users[0].ID {
 		t.Errorf("Incorrect user ID associated with session.")
 	}
 }
 
 func TestUpdateSessionTime(t *testing.T) {
-	session := GetSession(sessions[0].Id)
-	err := UpdateSessionTime(sessions[0].Id)
+	session := GetSession(sessions[0].ID)
+	err := UpdateSessionTime(sessions[0].ID)
 	if err != nil {
 		panic(err)
 	}
-	if session.Expires.After(GetSession(sessions[0].Id).Expires) {
+	if session.Expires.After(GetSession(sessions[0].ID).Expires) {
 		t.Errorf("Expiration was not updated.")
 	}
 }

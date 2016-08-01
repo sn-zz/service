@@ -10,7 +10,7 @@ import (
 
 // User represents a user
 type User struct {
-	Id       uuid
+	ID       uuid
 	Username string
 	Password string
 	Address  *mail.Address
@@ -28,10 +28,10 @@ func CheckPassword(u User, password string) bool {
 	return u.Password == GeneratePasswordHash(password)
 }
 
-// FindUserById looks for a user given a UUID
-func FindUserById(id uuid) User {
+// FindUserByID looks for a user given a UUID
+func FindUserByID(id uuid) User {
 	for _, u := range users {
-		if u.Id == id {
+		if u.ID == id {
 			return u
 		}
 	}
@@ -102,7 +102,7 @@ func ValidateUser(user User) error {
 
 // CreateUser adds a user to the users list
 func CreateUser(user User) User {
-	user.Id = GenerateUuid()
+	user.ID = GenerateUUID()
 	user.Password = GeneratePasswordHash(user.Password)
 	user.Created = time.Now()
 	users = append(users, user)
@@ -113,7 +113,7 @@ func CreateUser(user User) User {
 func UpdateUser(user User) User {
 	user.Password = GeneratePasswordHash(user.Password)
 	for i, u := range users {
-		if u.Id == user.Id {
+		if u.ID == user.ID {
 			user.Updated = time.Now()
 			users[i] = user
 			return users[i]
@@ -125,7 +125,7 @@ func UpdateUser(user User) User {
 // PatchUser patches a user in the users list based on the user ID
 func PatchUser(user User) User {
 	for i, u := range users {
-		if u.Id == user.Id {
+		if u.ID == user.ID {
 			if user.Address.Address != "" {
 				u.Address = user.Address
 			}
@@ -146,7 +146,7 @@ func PatchUser(user User) User {
 // DeleteUser deletes a user based on the user ID
 func DeleteUser(id uuid) error {
 	for i, u := range users {
-		if u.Id == id {
+		if u.ID == id {
 			users = append(users[:i], users[i+1:]...)
 			return nil
 		}

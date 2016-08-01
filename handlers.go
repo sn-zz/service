@@ -15,10 +15,10 @@ import (
 // Index handles GET /index
 var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	if auth := r.Header["Authorization"]; auth != nil {
-		if session := FindSession(auth[0]); session.Id != "" {
-			u := FindUserById(session.UserId)
+		if session := FindSession(auth[0]); session.ID != "" {
+			u := FindUserByID(session.UserID)
 			fmt.Fprintf(w, "Welcome, %s!\n", u.Username)
-			err := UpdateSessionTime(session.Id)
+			err := UpdateSessionTime(session.ID)
 			if err != nil {
 				panic(err)
 			}
@@ -46,19 +46,19 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-	refUser := FindUserById(user.Id)
-	if len(refUser.Id) > 0 {
+	refUser := FindUserByID(user.ID)
+	if len(refUser.ID) > 0 {
 		if CheckPassword(refUser, user.Password) {
 			w.WriteHeader(http.StatusOK)
-			s := CreateSession(refUser.Id)
-			fmt.Fprintf(w, "%s", GenerateSha1Hash(string(s.Id)))
+			s := CreateSession(refUser.ID)
+			fmt.Fprintf(w, "%s", GenerateSha1Hash(string(s.ID)))
 			return
 		}
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	fmt.Printf("userId %s, password %s", user.Id, user.Password)
+	fmt.Printf("userID %s, password %s", user.ID, user.Password)
 
 	w.WriteHeader(http.StatusNotFound)
 })
@@ -72,12 +72,12 @@ var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 })
 
-// UserShow handles GET /users/:userId
+// UserShow handles GET /users/:userID
 var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userId := uuid(vars["userId"])
-	user := FindUserById(userId)
-	if len(user.Id) > 0 {
+	userID := uuid(vars["userID"])
+	user := FindUserByID(userID)
+	if len(user.ID) > 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(user); err != nil {
@@ -92,7 +92,7 @@ var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Not Found")
 })
 
-// UserCreate handles POST /users/:userId
+// UserCreate handles POST /users/:userID
 var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
@@ -129,13 +129,13 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 		return
 	}
-	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByUsername(user.Username); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Username is taken.")
 		return
 	}
-	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByAddress(user.Address); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Address is taken.")
@@ -158,7 +158,7 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 })
 
-// UserUpdate handles PUT /users/:userId
+// UserUpdate handles PUT /users/:userID
 var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
@@ -167,7 +167,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	userId := uuid(vars["userId"])
+	userID := uuid(vars["userID"])
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
@@ -185,7 +185,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{}
-	user.Id = userId
+	user.ID = userID
 	user.Username = input.Username
 	user.Password = input.Password
 	user.Address, err = mail.ParseAddress(input.Address)
@@ -202,19 +202,19 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 		return
 	}
-	if findUser := FindUserById(user.Id); len(findUser.Id) == 0 {
+	if findUser := FindUserByID(user.ID); len(findUser.ID) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "Not found")
 		return
 	}
-	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByUsername(user.Username); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Username is taken.")
 		return
 	}
-	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByAddress(user.Address); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Address is taken.")
@@ -229,7 +229,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
-// UserPatch handles PATCH /users/:userId
+// UserPatch handles PATCH /users/:userID
 var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
@@ -238,7 +238,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	userId := uuid(vars["userId"])
+	userID := uuid(vars["userID"])
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
@@ -255,7 +255,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{}
-	user.Id = userId
+	user.ID = userID
 	user.Username = input.Username
 	user.Password = input.Password
 	user.Address, err = mail.ParseAddress(input.Address)
@@ -271,19 +271,19 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 		return
 	}
-	if findUser := FindUserById(user.Id); len(findUser.Id) == 0 {
+	if findUser := FindUserByID(user.ID); len(findUser.ID) == 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "Not found")
 		return
 	}
-	if findUser := FindUserByUsername(user.Username); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByUsername(user.Username); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Username is taken.")
 		return
 	}
-	if findUser := FindUserByAddress(user.Address); len(findUser.Id) > 0 && findUser.Id != user.Id {
+	if findUser := FindUserByAddress(user.Address); len(findUser.ID) > 0 && findUser.ID != user.ID {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprint(w, "Address is taken.")
@@ -298,12 +298,12 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     }
 })
 
-// UserDelete handles DELETE /users/:userId
+// UserDelete handles DELETE /users/:userID
 var UserDelete = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userId := uuid(vars["userId"])
+	userID := uuid(vars["userID"])
 
-	if err := DeleteUser(userId); err == nil {
+	if err := DeleteUser(userID); err == nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(w, err)

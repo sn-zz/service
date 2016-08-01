@@ -8,8 +8,8 @@ import (
 
 // Session contains a user's session
 type Session struct {
-	Id      uuid
-	UserId  uuid
+	ID      uuid
+	UserID  uuid
 	Expires time.Time
 }
 
@@ -22,8 +22,8 @@ const SessionTime = 86400
 var sessions Sessions
 
 // CreateSession creates a new session
-func CreateSession(userId uuid) Session {
-	s := Session{Id: GenerateUuid(), UserId: userId, Expires: time.Now().Add(SessionTime)}
+func CreateSession(userID uuid) Session {
+	s := Session{ID: GenerateUUID(), UserID: userID, Expires: time.Now().Add(SessionTime)}
 	sessions = append(sessions, s)
 	return s
 }
@@ -31,7 +31,7 @@ func CreateSession(userId uuid) Session {
 // GetSession retrieves a session given a user ID
 func GetSession(id uuid) Session {
 	for _, s := range sessions {
-		if s.Id == id {
+		if s.ID == id {
 			return s
 		}
 	}
@@ -41,7 +41,7 @@ func GetSession(id uuid) Session {
 // FindSession retrieves a session given a session hash
 func FindSession(hash string) Session {
 	for _, s := range sessions {
-		if GenerateSha1Hash(string(s.Id)) == hash {
+		if GenerateSha1Hash(string(s.ID)) == hash {
 			return s
 		}
 	}
@@ -51,7 +51,7 @@ func FindSession(hash string) Session {
 // UpdateSessionTime updates a given session UUID
 func UpdateSessionTime(id uuid) error {
 	for i, s := range sessions {
-		if s.Id == id {
+		if s.ID == id {
 			sessions[i].Expires = time.Now().Add(SessionTime)
 			return nil
 		}

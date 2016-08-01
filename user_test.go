@@ -7,8 +7,8 @@ import (
 )
 
 func TestCheckPassword(t *testing.T) {
-	id := users[0].Id
-	user := FindUserById(id)
+	id := users[0].ID
+	user := FindUserByID(id)
 	correctPassword := "s3cr3t"
 	incorrectPassword := "s3cret"
 
@@ -21,15 +21,15 @@ func TestCheckPassword(t *testing.T) {
 	}
 }
 
-func TestFindUserById(t *testing.T) {
-	knownId := users[0].Id
-	unknownId := GenerateUuid()
+func TestFindUserByID(t *testing.T) {
+	knownID := users[0].ID
+	unknownID := GenerateUUID()
 
-	if user := FindUserById(knownId); len(user.Id) == 0 {
+	if user := FindUserByID(knownID); len(user.ID) == 0 {
 		t.Errorf("Expected known user ID, got unknown user ID.")
 	}
 
-	if user := FindUserById(unknownId); len(user.Id) > 0 {
+	if user := FindUserByID(unknownID); len(user.ID) > 0 {
 		t.Errorf("Expected unknown user ID, got known user ID.")
 	}
 }
@@ -44,11 +44,11 @@ func TestFindUserByAddress(t *testing.T) {
 		t.Error(err)
 	}
 
-	if user := FindUserByAddress(knownAddress); len(user.Id) == 0 {
+	if user := FindUserByAddress(knownAddress); len(user.ID) == 0 {
 		t.Errorf("Expected known address, got unknown address.")
 	}
 
-	if user := FindUserByAddress(unknownAddress); len(user.Id) > 0 {
+	if user := FindUserByAddress(unknownAddress); len(user.ID) > 0 {
 		t.Errorf("Expected unknown address, got known address.")
 	}
 }
@@ -57,11 +57,11 @@ func TestFindUserByUsername(t *testing.T) {
 	knownUsername := users[0].Username
 	unknownUsername := "unknown-username"
 
-	if user := FindUserByUsername(knownUsername); len(user.Id) == 0 {
+	if user := FindUserByUsername(knownUsername); len(user.ID) == 0 {
 		t.Errorf("Expected known user, got unknown user.")
 	}
 
-	if user := FindUserByUsername(unknownUsername); len(user.Id) > 0 {
+	if user := FindUserByUsername(unknownUsername); len(user.ID) > 0 {
 		t.Errorf("Expected unknown user, got known user.")
 	}
 }
@@ -117,10 +117,10 @@ func TestUpdateUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	userBeforeUpdate := FindUserById(users[0].Id)
-	updatedUser := User{Id: users[0].Id, Username: "zgg", Password: "S3crET!@#$", Address: address}
+	userBeforeUpdate := FindUserByID(users[0].ID)
+	updatedUser := User{ID: users[0].ID, Username: "zgg", Password: "S3crET!@#$", Address: address}
 	user := UpdateUser(updatedUser)
-    if len(user.Id) == 0 {
+    if len(user.ID) == 0 {
         t.Errorf("User was not found.")
     }
 	if user.Username != updatedUser.Username {
@@ -142,12 +142,12 @@ func TestPatchUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	userToPatch := FindUserById(users[0].Id)
+	userToPatch := FindUserByID(users[0].ID)
 	userToPatch.Username = "zzg"
 	userToPatch.Password = "S3crET!@#$"
 	userToPatch.Address = address
 	user := PatchUser(userToPatch)
-    if len(user.Id) == 0 {
+    if len(user.ID) == 0 {
         t.Errorf("User was not found.")
     }
 	if user.Username != userToPatch.Username {
@@ -165,12 +165,12 @@ func TestPatchUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	user := FindUserById(users[0].Id)
-	err := DeleteUser(user.Id)
+	user := FindUserByID(users[0].ID)
+	err := DeleteUser(user.ID)
 	if err != nil {
 		t.Error(err)
 	}
-	if users[0].Id == user.Id {
+	if users[0].ID == user.ID {
 		t.Errorf("User was not deleted.")
 	}
 }

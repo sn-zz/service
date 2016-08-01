@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
-// GenerateUuid generates a universally unique identifier
-func GenerateUuid() uuid {
+// GenerateUUID generates a universally unique identifier
+func GenerateUUID() uuid {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
