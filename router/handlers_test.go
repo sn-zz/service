@@ -6,6 +6,7 @@ package router
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -43,22 +44,9 @@ func TestIndex(t *testing.T) {
 
 	users := user.GetAll()
 	user := user.User{ID: users[0].ID, Password: "1@E4s67890"}
-	payload := new(bytes.Buffer)
-	json.NewEncoder(payload).Encode(user)
-	resp, err = http.Post(server.URL+"/auth", "application/json; charset=utf-8", payload)
+	authToken, err := getAuthToken(user)
 	if err != nil {
 		panic(err)
-	}
-	defer resp.Body.Close()
-	authToken, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	if resp.StatusCode != 200 {
-		t.Error("Incorrect response status code.")
-	}
-	if len(authToken) == 0 {
-		t.Error("No authorization token was provided.")
 	}
 	req, err := http.NewRequest("GET", server.URL+"/", nil)
 	if err != nil {
@@ -100,4 +88,25 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func getAuthToken(user user.User) (string, error) {
+	payload := new(bytes.Buffer)
+	json.NewEncoder(payload).Encode(user)
+	resp, err := http.Post(server.URL+"/auth", "application/json; charset=utf-8", payload)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	authToken, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Incorrect response status code.")
+	}
+	if len(authToken) == 0 {
+		return "", fmt.Errorf("No authorization token was provided.")
+	}
+	return string(authToken), nil
 }
