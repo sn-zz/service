@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/mail"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sn/service/helpers"
@@ -22,13 +23,17 @@ import (
 var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	if auth := r.Header["Authorization"]; auth != nil {
 		if s := session.Find(auth[0]); s.ID != "" {
-			u := user.FindByID(s.UserID)
-			fmt.Fprintf(w, "Welcome, %s!\n", u.Username)
-			err := session.Bump(s.ID)
-			if err != nil {
-				panic(err)
+			if time.Now().Before(s.Expires) {
+				u := user.FindByID(s.UserID)
+				fmt.Fprintf(w, "Welcome, %s!\n", u.Username)
+				err := session.Bump(s.ID)
+				if err != nil {
+					panic(err)
+				}
+				return
+			} else {
+				session.Expire(s.ID)
 			}
-			return
 		}
 	}
 	fmt.Fprint(w, "Welcome!\n")
