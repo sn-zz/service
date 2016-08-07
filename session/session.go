@@ -26,7 +26,6 @@ var sessions []Session
 // Create creates a new session
 func Create(userID types.UUID) Session {
 	s := Session{ID: helpers.GenerateUUID(), UserID: userID, Expires: time.Now().AddDate(0, 0, 1)}
-	fmt.Println("[server] Session expires ... " + s.Expires.String())
 	sessions = append(sessions, s)
 	return s
 }

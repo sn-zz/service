@@ -6,7 +6,6 @@ package router
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -78,7 +77,6 @@ func TestIndex(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Error("Incorrect response status code.")
 	}
-	fmt.Println(string(body))
 	if string(body) != "Welcome, "+users[0].Username+"!\n" {
 		t.Error("Invalid response body.")
 	}

@@ -68,9 +68,6 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	fmt.Printf("userID %s, password %s", u.ID, u.Password)
-
 	w.WriteHeader(http.StatusNotFound)
 })
 
