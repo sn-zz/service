@@ -17,70 +17,90 @@ import (
 func TestCreate(t *testing.T) {
 	userID := helpers.GenerateUUID()
 	if userID == "" {
-		t.Errorf("Could not generate UUID")
+		t.Error("Could not generate UUID")
 	}
 	newSession := Create(userID)
 	if newSession.UserID != userID {
-		t.Errorf("User UUID mismatch.")
+		t.Error("User UUID mismatch.")
 	}
 	if newSession.Expires.IsZero() {
-		t.Errorf("Expiration was not properly set.")
+		t.Error("Expiration was not properly set.")
 	}
 }
 
 func TestGet(t *testing.T) {
+	s := Session{}
+	s = Get(s.ID)
+	if len(s.ID) != 0 {
+		t.Error("Get fail should return empty session.")
+	}
 	sessions := GetAll()
-	s := Get(sessions[0].ID)
+	s = Get(sessions[0].ID)
 	if s.Expires.Sub(sessions[0].Expires) != 0 {
-		t.Errorf("Incorrect session was obtained.")
+		t.Error("Incorrect session was obtained.")
 	}
 	users := user.GetAll()
 	if s.UserID != users[0].ID {
-		t.Errorf("Incorrect user ID associated with session.")
+		t.Error("Incorrect user ID associated with session.")
 	}
 }
 
 func TestGetAll(t *testing.T) {
 	sessions := GetAll()
 	if len(sessions) == 0 {
-		t.Errorf("Incorrect sessions length.")
+		t.Error("Incorrect sessions length.")
 	}
 }
 
 func TestExpire(t *testing.T) {
+	s := Session{}
+	err := Expire(s.ID)
+	if err.Error() != "Could not find session" {
+		t.Error("Remove fail should specify not found.")
+	}
 	sessions := GetAll()
 	for _, s := range sessions {
 		Expire(s.ID)
 	}
 	for _, s := range sessions {
 		if !s.Expires.IsZero() {
-			t.Errorf("Incorrect session expiration.")
+			t.Error("Incorrect session expiration.")
 		}
 	}
 }
 
 func TestFind(t *testing.T) {
+	s := Session{}
+	s = Find("")
+	if len(s.ID) != 0 {
+		t.Error("Find fail should return empty session.")
+	}
 	sessions := GetAll()
 	sessionHash := helpers.GenerateSha1Hash(string(sessions[0].ID))
-	s := Find(sessionHash)
+	s = Find(sessionHash)
 	if s.Expires.Sub(sessions[0].Expires) != 0 {
-		t.Errorf("Incorrect session was obtained.")
+		t.Error("Incorrect session was obtained.")
 	}
 	users := user.GetAll()
 	if s.UserID != users[0].ID {
-		t.Errorf("Incorrect user ID associated with session.")
+		t.Error("Incorrect user ID associated with session.")
 	}
 }
 
 func TestBump(t *testing.T) {
+	s := Session{}
+	err := Bump(s.ID)
+	if err.Error() != "Could not find session" {
+		t.Error("Bump fail should specify not found.")
+	}
 	sessions := GetAll()
-	s := Get(sessions[0].ID)
-	err := Bump(sessions[0].ID)
+	s = Get(sessions[0].ID)
+	err = Bump(sessions[0].ID)
 	if err != nil {
 		panic(err)
 	}
 	if s.Expires.After(Get(sessions[0].ID).Expires) {
-		t.Errorf("Expiration was not updated.")
+		t.Error("Expiration was not updated.")
 	}
 }
 
@@ -92,16 +112,21 @@ func TestClean(t *testing.T) {
 	Clean()
 	sessions = GetAll()
 	if len(sessions) != 0 {
-		t.Errorf("Sessions did not clean correctly.")
+		t.Error("Sessions did not clean correctly.")
 	}
 }
 
 func TestRemove(t *testing.T) {
-	s := Create(helpers.GenerateUUID())
+	s := Session{}
+	err := Remove(s.ID)
+	if err.Error() != "Could not find session" {
+		t.Error("Remove fail should specify not found.")
+	}
+	s = Create(helpers.GenerateUUID())
 	sessions := GetAll()
-	Remove(s.ID)
+	err = Remove(s.ID)
 	if len(sessions) == len(GetAll()) {
-		t.Errorf("Session was not removed.")
+		t.Error("Session was not removed.")
 	}
 }
 

@@ -20,18 +20,18 @@ func TestCheckPassword(t *testing.T) {
 	incorrectPassword := "s3cret"
 
 	if !CheckPassword(u, correctPassword) {
-		t.Errorf("Expected password success, got failure.")
+		t.Error("Expected password success, got failure.")
 	}
 
 	if CheckPassword(u, incorrectPassword) {
-		t.Errorf("Expected password failure, got success.")
+		t.Error("Expected password failure, got success.")
 	}
 }
 
 func TestGetAll(t *testing.T) {
 	users := GetAll()
 	if len(users) == 0 {
-		t.Errorf("Incorrect users length.")
+		t.Error("Incorrect users length.")
 	}
 }
 
@@ -41,11 +41,11 @@ func TestFindByID(t *testing.T) {
 	unknownID := helpers.GenerateUUID()
 
 	if u := FindByID(knownID); len(u.ID) == 0 {
-		t.Errorf("Expected known user ID, got unknown user ID.")
+		t.Error("Expected known user ID, got unknown user ID.")
 	}
 
 	if u := FindByID(unknownID); len(u.ID) > 0 {
-		t.Errorf("Expected unknown user ID, got known user ID.")
+		t.Error("Expected unknown user ID, got known user ID.")
 	}
 }
 
@@ -61,11 +61,11 @@ func TestFindByAddress(t *testing.T) {
 	}
 
 	if u := FindByAddress(knownAddress); len(u.ID) == 0 {
-		t.Errorf("Expected known address, got unknown address.")
+		t.Error("Expected known address, got unknown address.")
 	}
 
 	if u := FindByAddress(unknownAddress); len(u.ID) > 0 {
-		t.Errorf("Expected unknown address, got known address.")
+		t.Error("Expected unknown address, got known address.")
 	}
 }
 
@@ -75,11 +75,11 @@ func TestFindByUsername(t *testing.T) {
 	unknownUsername := "unknown-username"
 
 	if u := FindByUsername(knownUsername); len(u.ID) == 0 {
-		t.Errorf("Expected known user, got unknown user.")
+		t.Error("Expected known user, got unknown user.")
 	}
 
 	if u := FindByUsername(unknownUsername); len(u.ID) > 0 {
-		t.Errorf("Expected unknown user, got known user.")
+		t.Error("Expected unknown user, got known user.")
 	}
 }
 
@@ -88,9 +88,20 @@ func TestValidate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	u := User{Username: "zg", Password: "123456789", Address: address}
+	u := User{Username: "", Password: "123456789", Address: address}
+	if err := Validate(u); err == nil { // Complains about username length == 0
+		t.Error(err)
+	}
+	u.Username = "@@"
+	if err := Validate(u); err == nil { // Complains about illegal characters
+		t.Error(err)
+	}
+	u.Username = "zg"
 	if err := Validate(u); err == nil { // Complains about length
 		t.Error(err)
+	}
+	u.Password = "aaaaaaaaaa"
+	if err := Validate(u); err == nil { // Complains about digits
 	}
 	u.Password = "0123456789"
 	if err := Validate(u); err == nil { // Complains about lowercase
@@ -120,13 +131,13 @@ func TestCreate(t *testing.T) {
 	currentUserCount := len(users)
 	u := Create(User{Username: "zzg", Password: password, Address: address})
 	if len(GetAll()) == currentUserCount {
-		t.Errorf("User wasn't created.")
+		t.Error("User wasn't created.")
 	}
 	if u.Created.IsZero() {
-		t.Errorf("User creation time not set.")
+		t.Error("User creation time not set.")
 	}
 	if !CheckPassword(u, password) {
-		t.Errorf("User password incorrectly set.")
+		t.Error("User password incorrectly set.")
 	}
 }
 
@@ -136,23 +147,27 @@ func TestUpdate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	u := Update(User{})
+	if len(u.ID) != 0 {
+		t.Error("Patch fail should return empty user.")
+	}
 	userBeforeUpdate := FindByID(users[0].ID)
 	updatedUser := User{ID: users[0].ID, Username: "zgg", Password: "S3crET!@#$", Address: address}
-	u := Update(updatedUser)
+	u = Update(updatedUser)
 	if len(u.ID) == 0 {
-		t.Errorf("User was not found.")
+		t.Error("User was not found.")
 	}
 	if u.Username != updatedUser.Username {
-		t.Errorf("Username was not updated.")
+		t.Error("Username was not updated.")
 	}
 	if !CheckPassword(u, updatedUser.Password) {
-		t.Errorf("Password was not updated.")
+		t.Error("Password was not updated.")
 	}
 	if u.Address.Address != updatedUser.Address.Address {
-		t.Errorf("Email was not updated.")
+		t.Error("Email was not updated.")
 	}
 	if u.Updated.Sub(userBeforeUpdate.Updated) == 0 {
-		t.Errorf("Last Updated not updated.")
+		t.Error("Last Updated not updated.")
 	}
 }
 
@@ -162,37 +177,46 @@ func TestPatch(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	u := Patch(User{})
+	if len(u.ID) != 0 {
+		t.Error("Patch fail should return empty user.")
+	}
 	userToPatch := FindByID(users[0].ID)
 	userToPatch.Username = "zzg"
 	userToPatch.Password = "S3crET!@#$"
 	userToPatch.Address = address
-	u := Patch(userToPatch)
+	u = Patch(userToPatch)
 	if len(u.ID) == 0 {
-		t.Errorf("User was not found.")
+		t.Error("User was not found.")
 	}
 	if u.Username != userToPatch.Username {
-		t.Errorf("Username was not patched.")
+		t.Error("Username was not patched.")
 	}
 	if !CheckPassword(u, userToPatch.Password) {
-		t.Errorf("Password was not patched.")
+		t.Error("Password was not patched.")
 	}
 	if u.Address.Address != userToPatch.Address.Address {
-		t.Errorf("Email was not patched.")
+		t.Error("Email was not patched.")
 	}
 	if u.Updated.Sub(userToPatch.Updated) == 0 {
-		t.Errorf("Last Updated not patched.")
+		t.Error("Last Updated not patched.")
 	}
 }
 
 func TestDelete(t *testing.T) {
 	users := GetAll()
-	u := FindByID(users[0].ID)
+	u := User{}
 	err := Delete(u.ID)
+	if err.Error() != "Not found" {
+		t.Error("Delete fail should return empty user.")
+	}
+	u = FindByID(users[0].ID)
+	err = Delete(u.ID)
 	if err != nil {
 		t.Error(err)
 	}
 	if users[0].ID == u.ID {
-		t.Errorf("User was not deleted.")
+		t.Error("User was not deleted.")
 	}
 }
 
