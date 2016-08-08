@@ -1,54 +1,32 @@
-version: '{build}'
-pull_requests:
-  do_not_increment_build_number: true
-build: off
-test_script:
-- cmd: >-
-    go get github.com/golang/lint/golint
-    go get -t -v ./...
-
-    ./test.sh
-    golint ./...
-on_success:
-- cmd: bash <(curl -s https://codecov.io/bash)
-
 version: "{build}"
-
-branches:
-  only:
-    - master
-
-environment:
-  GOPATH: c:\gopath
-  matrix:
-  - GOARCH: amd64
-    GOVERSION: 1.6
 
 clone_folder: c:\gopath\src\github.com\sn\service
 
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.6
+
+init:
+  - git config --global core.autocrlf input
+
 install:
-  - set Path=c:\go\bin;%Path%
-  - echo %Path%
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-%GOARCH%.msi
-  - msiexec /i go%GOVERSION%.windows-%GOARCH%.msi /q
+  # Install Go 1.6.
+  - rmdir c:\go /s /q
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
+  - msiexec /i go%GOVERSION%.windows-amd64.msi /q
+  - set Path=c:\go\bin;c:\gopath\bin;%Path%
   - go version
   - go env
+
+build: false
+deploy: false
+
+before_test:
+  - go get -t ./...
   - go get github.com/golang/lint/golint
-  - go get -d -v -t ./...
 
-build_script:
-  - go test -v ./...
+test_script:
   - go vet ./...
-  - git rev-parse HEAD
-
-test: off
-
-deploy: off
-
-notifications:
-  - provider: Email
-    to:
-      - zzatkin@gmail.com
-    on_build_success: false
-    on_build_failure: false
-    on_build_status_changed: true
+  - golint ./...
+  - gofmt -s -l .
+  - go test -race -cover -v -tags=test ./...
