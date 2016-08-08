@@ -1,0 +1,54 @@
+version: '{build}'
+pull_requests:
+  do_not_increment_build_number: true
+build: off
+test_script:
+- cmd: >-
+    go get github.com/golang/lint/golint
+    go get -t -v ./...
+
+    ./test.sh
+    golint ./...
+on_success:
+- cmd: bash <(curl -s https://codecov.io/bash)
+
+version: "{build}"
+
+branches:
+  only:
+    - master
+
+environment:
+  GOPATH: c:\gopath
+  matrix:
+  - GOARCH: amd64
+    GOVERSION: 1.6
+
+clone_folder: c:\gopath\src\github.com\sn\service
+
+install:
+  - set Path=c:\go\bin;%Path%
+  - echo %Path%
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-%GOARCH%.msi
+  - msiexec /i go%GOVERSION%.windows-%GOARCH%.msi /q
+  - go version
+  - go env
+  - go get github.com/golang/lint/golint
+  - go get -d -v -t ./...
+
+build_script:
+  - go test -v ./...
+  - go vet ./...
+  - git rev-parse HEAD
+
+test: off
+
+deploy: off
+
+notifications:
+  - provider: Email
+    to:
+      - zzatkin@gmail.com
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: true

@@ -3,14 +3,10 @@ sudo: false
 go:
   - tip
 before_install:
-  - go get github.com/mattn/goveralls
-  - go get golang.org/x/tools/cmd/cover
   - go get github.com/golang/lint/golint
   - go get -t -v ./...
 script:
-script:
   - ./test.sh
-  - $HOME/gopath/bin/goveralls -service=travis-ci
   - golint ./...
 after_success:
   - bash <(curl -s https://codecov.io/bash)
