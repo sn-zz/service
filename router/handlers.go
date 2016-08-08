@@ -31,9 +31,8 @@ var Index = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					panic(err)
 				}
 				return
-			} else {
-				session.Expire(s.ID)
 			}
+			session.Expire(s.ID)
 		}
 	}
 	fmt.Fprint(w, "Welcome!\n")
