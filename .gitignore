@@ -3,4 +3,5 @@
 *.a
 *.so
 
-*.exe
+# Coverage reports, e.g. service.html
+*.html
