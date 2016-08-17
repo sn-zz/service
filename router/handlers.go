@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/mail"
 	"time"
@@ -43,10 +44,10 @@ var Auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	u := user.User{}
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -75,7 +76,7 @@ var UserIndex = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(user.GetAll()); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 })
 
@@ -88,7 +89,7 @@ var UserShow = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(user); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		return
 	}
@@ -108,10 +109,10 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := json.Unmarshal(body, &input); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -161,7 +162,7 @@ var UserCreate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(u); err != nil {
 		fmt.Fprint(w, err)
-		panic(err)
+		log.Fatal(err)
 	}
 })
 
@@ -178,16 +179,16 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := json.Unmarshal(body, &input); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
 		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -232,7 +233,7 @@ var UserUpdate = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(u); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 })
 
@@ -249,10 +250,10 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := json.Unmarshal(body, &input); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -301,7 +302,7 @@ var UserPatch = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(u); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 })
 

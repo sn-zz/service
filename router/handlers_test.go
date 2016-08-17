@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/mail"
@@ -28,15 +29,15 @@ var (
 func TestIndex(t *testing.T) {
 	resp, err := http.Get(server.URL + "/")
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	if resp.StatusCode != 200 {
-		t.Error("Incorrect response status code.")
+		t.Error("Invalid response status code.")
 	}
 	if string(body) != "Welcome!\n" {
 		t.Error("Invalid response body.")
@@ -46,24 +47,24 @@ func TestIndex(t *testing.T) {
 	user := user.User{ID: users[0].ID, Password: "1@E4s67890"}
 	authToken, err := getAuthToken(user)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	req, err := http.NewRequest("GET", server.URL+"/", nil)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	req.Header.Add("Authorization", string(authToken))
 	resp, err = client.Do(req)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	if resp.StatusCode != 200 {
-		t.Error("Incorrect response status code.")
+		t.Error("Invalid response status code.")
 	}
 	if string(body) != "Welcome, "+users[0].Username+"!\n" {
 		t.Error("Invalid response body.")
@@ -80,7 +81,7 @@ func TestMain(m *testing.M) {
 	for _, un := range usernames {
 		addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		u := user.User{Username: un, Password: "1@E4s67890", Address: addr, Created: time.Now()}
 		u = user.Create(u)

@@ -4,6 +4,7 @@
 package user
 
 import (
+	"log"
 	"net/mail"
 	"os"
 	"strings"
@@ -225,7 +226,7 @@ func TestMain(m *testing.M) {
 	for _, un := range usernames {
 		addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		u := User{Username: un, Password: "1@E4s67890", Address: addr, Created: time.Now()}
 		_ = Create(u)

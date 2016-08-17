@@ -4,6 +4,7 @@
 package session
 
 import (
+	"log"
 	"net/mail"
 	"os"
 	"strings"
@@ -97,7 +98,7 @@ func TestBump(t *testing.T) {
 	s = Get(sessions[0].ID)
 	err = Bump(sessions[0].ID)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	if s.Expires.After(Get(sessions[0].ID).Expires) {
 		t.Error("Expiration was not updated.")
@@ -135,7 +136,7 @@ func TestMain(m *testing.M) {
 	for _, un := range usernames {
 		addr, err := mail.ParseAddress(strings.Title(un) + "<" + un + "@example.com>")
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		u := user.User{Username: un, Password: helpers.GeneratePasswordHash("s3cr3t"), Address: addr, Created: time.Now()}
 		u = user.Create(u)
